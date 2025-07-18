@@ -1,0 +1,260 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// this table stores user account information
+model Account {
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  user_id             String  @db.ObjectId
+  type                String
+  provider            String
+  provider_account_id String
+  refresh_token       String?
+  access_token        String?
+  expires_at          Int?
+  token_type          String?
+  scope               String?
+  id_token            String?
+  session_state       String?
+
+  user User @relation(fields: [user_id], references: [id])
+  @@unique([provider, provider_account_id])
+}
+
+// User table
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  availability String?
+  email    String? @unique
+  username String? @unique
+  fname    String?
+  lname    String?
+  password String?
+  domain   String? @unique
+  avatar   String?
+  billing_id String?
+  type String? @default("user")
+  ucodes                 Ucode[]
+  role_users             RoleUser[]
+  sender_notifications   Notification[]  @relation("sender")
+  receiver_notifications Notification[]  @relation("receiver")
+  roles                  Role[]
+  comments               Comment[]
+  accounts               Account[]
+  projects               Project[]
+  tasks                  Task[]
+  project_members        ProjectMember[]
+  @@map("users")
+}
+
+// This Ucode table for storing temporary token/code for use of
+// email verification, forgot password etc
+model Ucode {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  status     Int?     @default(1)
+  user_id String? @db.ObjectId
+  user    User?   @relation(fields: [user_id], references: [id])
+  token      String?
+  email      String?
+  expired_at DateTime?
+  @@map("ucodes")
+}
+
+// Store list of Roles
+model Role {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  title String?
+  name  String?
+  user_id String? @db.ObjectId
+  user    User?   @relation(fields: [user_id], references: [id])
+  permission_roles PermissionRole[]
+  role_users       RoleUser[]
+  project_members  ProjectMember[]
+  @@map("roles")
+}
+
+// Store List of permissions
+model Permission {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  title            String?
+  action           String?
+  subject          String?
+  conditions       String?
+  fields           String?
+  permission_roles PermissionRole[]
+  @@map("permissions")
+}
+
+// permission and role relationship
+model PermissionRole {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+  permission_id String   @db.ObjectId
+  permission    Permission? @relation(fields: [permission_id], references: [id])
+  role_id String   @db.ObjectId
+  role    Role?    @relation(fields: [role_id], references: [id])
+  @@map("permission_roles")
+}
+
+// role and user relationship
+model RoleUser {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  role_id String   @db.ObjectId
+  role    Role?    @relation(fields: [role_id], references: [id])
+  user_id String   @db.ObjectId
+  user    User?    @relation(fields: [user_id], references: [id])
+  @@map("role_users")
+}
+
+// notification event
+model NotificationEvent {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  type          String?
+  text          String?
+  notifications Notification[]
+  @@map("notification_events")
+}
+
+// notification
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  sender_id   String? @db.ObjectId
+  sender      User?   @relation("sender", fields: [sender_id], references: [id])
+  receiver_id String? @db.ObjectId
+  receiver    User?   @relation("receiver", fields: [receiver_id], references: [id])
+  notification_event_id String? @db.ObjectId
+  notification_event    NotificationEvent? @relation(fields: [notification_event_id], references: [id])
+  entity_id Int?
+  read_at DateTime?
+  @@map("notifications")
+}
+
+model Project {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  status     Int?     @default(1)
+  name        String?
+  description String?
+  user_id         String? @db.ObjectId
+  user            User?           @relation(fields: [user_id], references: [id])
+  tasks           Task[]
+  project_members ProjectMember[]
+  @@map("projects")
+}
+
+// this table stores list of project members
+model ProjectMember {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  status     Int?     @default(1)
+  user_id String? @db.ObjectId
+  user    User?   @relation(fields: [user_id], references: [id])
+  project_id String? @db.ObjectId
+  project    Project? @relation(fields: [project_id], references: [id])
+  role_id String? @db.ObjectId
+  role    Role?   @relation(fields: [role_id], references: [id])
+  @@map("project_members")
+}
+
+// task table
+model Task {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deadline   DateTime?
+  status     String?  @default("Pending")
+  title       String
+  description String?
+  priority Int? @default(1)
+  assigned_to String? @db.ObjectId
+  user        User?   @relation(fields: [assigned_to], references: [id])
+  project_id String? @db.ObjectId
+  project    Project?  @relation(fields: [project_id], references: [id])
+  comments   Comment[]
+  parent_task_dependencies TaskDependency[] @relation("parent_task")
+  child_task_dependencies  TaskDependency[]
+  @@map("tasks")
+}
+
+model TaskDependency {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  status     Int?     @default(1)
+  parent_task_id String? @db.ObjectId
+  parent_task    Task?   @relation("parent_task", fields: [parent_task_id], references: [id])
+  task_id String? @db.ObjectId
+  task    Task?   @relation(fields: [task_id], references: [id])
+  @@map("task_dependencies")
+}
+
+// comment table
+model Comment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+  status     Int?     @default(1)
+  parent_id String?
+  content String?
+  user_id String? @db.ObjectId
+  user    User?   @relation(fields: [user_id], references: [id])
+  task_id String? @db.ObjectId
+  task    Task?   @relation(fields: [task_id], references: [id])
+  @@map("comments")
+}
+
+// this table stores example
+// model Note {
+//   id                String  @id @default(cuid())
+//   created_at DateTime  @default(now())
+//   updated_at DateTime  @default(now())
+//   deleted_at DateTime?
+//   status     Int?      @default(1) @db.SmallInt
+
+//   title String?
+//   body  String? @db.Text
+
+//   tenant_id Int?
+//   tenant    Organization? @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+//   @@map("notes")
+// }
