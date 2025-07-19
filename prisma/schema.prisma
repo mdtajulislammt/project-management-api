@@ -123,7 +123,8 @@ model Notification {
   message     String
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
-  status      Int?     @default(1)
+
   user        User     @relation(fields: [userId], references: [id])
 }
+
 

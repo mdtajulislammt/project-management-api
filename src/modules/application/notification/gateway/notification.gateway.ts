@@ -3,23 +3,41 @@ import {
   WebSocketServer,
   SubscribeMessage,
   MessageBody,
+  ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { CreateNotificationDto } from '../dto/create-notification.dto';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({
-  cors: { origin: '*' },
-})
-export class NotificationGateway {
+@WebSocketGateway({ cors: true })
+export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  @SubscribeMessage('notify')
-  handleNotification(@MessageBody() data: CreateNotificationDto) {
-    this.server.emit(`user-${data.userId}`, data);
+  private users: Map<string, Socket> = new Map();
+
+  handleConnection(client: Socket) {
+    const userId = client.handshake.query.userId as string;
+    if (userId) {
+      this.users.set(userId, client);
+      console.log(`User connected: ${userId}`);
+    }
   }
 
-  sendToUser(userId: string, payload: any) {
-    this.server.emit(`user-${userId}`, payload);
+  handleDisconnect(client: Socket) {
+    for (const [userId, socket] of this.users.entries()) {
+      if (socket.id === client.id) {
+        this.users.delete(userId);
+        console.log(`User disconnected: ${userId}`);
+        break;
+      }
+    }
+  }
+
+  sendNotificationToUser(userId: string, notification: any) {
+    const client = this.users.get(userId);
+    if (client) {
+      client.emit('notification', notification);
+    }
   }
 }

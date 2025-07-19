@@ -1,34 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { PresenceService } from './presence.service';
-import { CreatePresenceDto } from './dto/create-presence.dto';
-import { UpdatePresenceDto } from './dto/update-presence.dto';
 
-@Controller('presences')
+@Controller('presence')
 export class PresenceController {
-  constructor(private readonly presenceService: PresenceService) {}
+  constructor(private presenceService: PresenceService) {}
 
-  @Post()
-  create(@Body() dto: CreatePresenceDto) {
-    return this.presenceService.create(dto);
+  @Post('join')
+  async joinProject(@Body() body: { userId: string; projectId: string }) {
+    return this.presenceService.userJoinProject(body.userId, body.projectId);
   }
 
-  @Get()
-  findAll() {
-    return this.presenceService.findAll();
+  @Post('leave')
+  async leaveProject(@Body() body: { userId: string; projectId: string }) {
+    return this.presenceService.userLeaveProject(body.userId, body.projectId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.presenceService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdatePresenceDto) {
-    return this.presenceService.update(id, dto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.presenceService.remove(id);
+  @Get('project/:projectId')
+  async getPresences(@Param('projectId') projectId: string) {
+    return this.presenceService.getProjectPresences(projectId);
   }
 }

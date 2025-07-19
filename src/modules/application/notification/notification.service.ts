@@ -31,4 +31,14 @@ export class NotificationService {
   remove(id: string) {
     return this.prisma.notification.delete({ where: { id } });
   }
+
+  findNotificationsByUser(userId: string) {
+    // Stub: return notifications for a user
+    return this.prisma.notification.findMany({ where: { userId } });
+  }
+
+  markAsRead(id: string) {
+    // Stub: mark notification as read
+    return this.prisma.notification.update({ where: { id }, data: { read: true } });
+  }
 }
