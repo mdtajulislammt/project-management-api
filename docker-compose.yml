@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    restart: always
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_data:/data/db
+  app:
+    build: .
+    command: yarn start:dev
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=mongodb://root:example@mongo:27017/project-management?authSource=admin
+      - JWT_SECRET=your_jwt_secret
+      - JWT_EXPIRES_IN=3600s
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+volumes:
+  mongo_data: 
