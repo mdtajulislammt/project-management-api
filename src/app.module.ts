@@ -9,9 +9,9 @@ import { PresenceModule } from './modules/application/presence/presence.module';
 import { NotificationModule } from './modules/application/notification/notification.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
-import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/user.module';
 import { CommentModule } from './modules/application/comment/comment.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
