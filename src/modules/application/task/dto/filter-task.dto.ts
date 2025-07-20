@@ -11,5 +11,5 @@ export class FilterTaskDto {
 
   @IsOptional()
   @IsString()
-  status?: string;
+  state?: string; 
 }

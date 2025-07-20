@@ -13,9 +13,14 @@ export class TaskController {
     return this.taskService.create(dto);
   }
 
+  @Get('all')
+  getAllTasks() {
+    return this.taskService.getAllTasks();
+  }
+
   @Get()
   findAll(@Query() filter: FilterTaskDto) {
-    return this.taskService.findAll(filter);
+    return this.taskService.findAll(filter || {});
   }
 
   @Get(':id')
@@ -29,7 +34,7 @@ export class TaskController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  delete(@Param('id') id: string) {
     return this.taskService.delete(id);
   }
 }
