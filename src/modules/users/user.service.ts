@@ -9,6 +9,11 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
+    // Check for existing user by email
+    const existing = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
+    if (existing) {
+      return { message: 'Email already registered' };
+    }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     return this.prisma.user.create({
       data: {
