@@ -13,48 +13,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model User {
-  id        String   @id @default(auto()) @map("_id")  @db.ObjectId
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("user")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  status    Int?     @default(1)
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  password      String
+  name          String
+  role          String         @default("MEMBER")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  status        String?        @default("complete")
   // Relations
-  assignedTasks Task[] @relation("AssignedTasks")
-  createdTasks  Task[] @relation("CreatedTasks")
-  comments      Comment[] @relation("UserComments")
+  assignedTasks Task[]         @relation("AssignedTasks")
+  createdTasks  Task[]         @relation("CreatedTasks")
+  comments      Comment[]      @relation("UserComments")
   timelines     Timeline[]
-  projects      Project[] @relation("ProjectOwner")
+  projects      Project[]      @relation("ProjectOwner")
   presences     Presence[]
-  notification     Notification[]
+  notification  Notification[]
 }
 
-
 model Task {
-  id          String   @id @default(auto()) @map("_id")  @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  status      String
-  state       String   @default("todo") // todo | in_progress | done
-  dueDate     DateTime?
-  projectId   String
-  assignedTo  String
-  createdBy   String
+  status      String // e.g., "pending", "completed"
+  priority    String // Task Priority (number)
+  deadline    DateTime // Deadline/Date
+  assignedTo  String?
+  projectId   String?
+  createdBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  project     Project  @relation(fields: [projectId], references: [id])
-  assignedUser User    @relation("AssignedTasks", fields: [assignedTo], references: [id])
-  creator      User    @relation("CreatedTasks", fields: [createdBy], references: [id])
-  comments     Comment[]
+  // Optional fields
+  comments Comment[]
+  // dependencies String[] @db.Array
+
+  // Relations
+  project      Project?    @relation(fields: [projectId], references: [id])
+  assignedUser User?       @relation("AssignedTasks", fields: [assignedTo], references: [id])
+  creator      User?       @relation("CreatedTasks", fields: [createdBy], references: [id])
   timelines    Timeline[]
 }
-
 
 model Comment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -62,69 +62,65 @@ model Comment {
   authorId  String
   content   String
   createdAt DateTime @default(now())
-  status    Int?     @default(1)
+  status    String
 
   // Relations
-  task      Task     @relation(fields: [taskId], references: [id])
-  author    User     @relation("UserComments", fields: [authorId], references: [id])
+  task   Task @relation(fields: [taskId], references: [id])
+  author User @relation("UserComments", fields: [authorId], references: [id])
 }
-
 
 model Timeline {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  taskId      String?
-  projectId   String?
-  userId      String
-  action      String
-  createdAt   DateTime @default(now())
-  status      Int?     @default(1)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskId    String?
+  projectId String?
+  userId    String
+  action    String
+  createdAt DateTime @default(now())
+  status    String
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id])
-  task        Task?    @relation(fields: [taskId], references: [id])
-  project     Project? @relation(fields: [projectId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  task    Task?    @relation(fields: [taskId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
 }
-
 
 model Project {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  ownerId     String   // Reference to the User who created the project
+  ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  status      Int?     @default(1)
+  status      String
+  startDate   DateTime?
+  endDate     DateTime?
 
   // Relations
-  tasks       Task[]
-  timelines   Timeline[]
-  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id])
-  presences   Presence[]
+  tasks     Task[]
+  timelines Timeline[]
+  owner     User     @relation("ProjectOwner", fields: [ownerId], references: [id])
+  presences Presence[]
 }
-
-
 
 model Presence {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   userId    String
   projectId String
-  joinedAt  DateTime @default(now())
+  joinedAt  DateTime  @default(now())
   leftAt    DateTime?
-  status    Int?     @default(1)
-  user      User     @relation(fields: [userId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
+  status    String
+  user      User      @relation(fields: [userId], references: [id])
+  project   Project   @relation(fields: [projectId], references: [id])
 }
-
 
 model Notification {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String
-  title       String
-  message     String
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  status    String
 
-  user        User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
-
-

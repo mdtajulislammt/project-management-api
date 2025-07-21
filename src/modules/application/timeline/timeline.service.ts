@@ -13,8 +13,42 @@ export class TimelineService {
         action: dto.action,
         taskId: dto.taskId,
         projectId: dto.projectId,
+        status: 'active',
       },
     });
+  }
+
+  async findAll() {
+    return this.prisma.timeline.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    return this.prisma.timeline.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+  }
+
+  async update(id: string, data: Partial<CreateTimelineDto>) {
+    return this.prisma.timeline.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.timeline.delete({ where: { id } });
   }
 
   async findByTaskOrProject(taskId?: string, projectId?: string) {

@@ -1,9 +1,17 @@
-// dto/register.dto.ts
+import { IsString, IsEmail } from 'class-validator';
+
 export class RegisterDto {
+  @IsString()
   name: string;
+
+  @IsEmail()
   email: string;
+
+  @IsString()
   password: string;
-  role?: 'admin' | 'manager' | 'user';
+
+  @IsString()
+  role?: string;
 }
 
 // dto/login.dto.ts

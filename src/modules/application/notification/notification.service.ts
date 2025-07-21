@@ -8,7 +8,12 @@ export class NotificationService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateNotificationDto) {
-    const notification = await this.prisma.notification.create({ data: dto });
+    const notification = await this.prisma.notification.create({
+      data: {
+        ...dto,
+        status: 'active',
+      },
+    });
     return notification;
   }
 

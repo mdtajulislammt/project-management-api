@@ -1,48 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { FilterTaskDto } from './dto/filter-task.dto';
 
 @Injectable()
 export class TaskService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreateTaskDto) {
-    // Remove or convert status if it's a string
-    const { status, ...rest } = dto as any;
-    let data: any = { ...rest };
-    if (typeof status === 'number') data.status = status;
-    // If status is a string, ignore it (or you could parseInt if you expect numbers as strings)
-    return this.prisma.task.create({ data });
+  async create(createTaskDto: CreateTaskDto) {
+    return this.prisma.task.create({
+      data: createTaskDto,
+    });
   }
 
-  getAllTasks() {
-    return this.prisma.task.findMany();
+  async findAll() {
+    return this.prisma.task.findMany({
+      include: {
+        assignedUser: true,
+        creator: true,
+        project: true,
+      },
+    });
   }
 
-  findAll(filter: FilterTaskDto) {
-    const where: any = {};
-    if (filter.projectId) where.projectId = filter.projectId;
-    if (filter.assignedTo) where.assignedTo = filter.assignedTo;
-    return this.prisma.task.findMany({ where });
+  async findOne(id: string) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) throw new NotFoundException('Task not found');
+    return task;
   }
 
-  findOne(id: string) {
-    return this.prisma.task.findUnique({ where: { id } });
+  async update(id: string, updateTaskDto: UpdateTaskDto) {
+    return this.prisma.task.update({
+      where: { id },
+      data: updateTaskDto,
+    });
   }
 
-  update(id: string, dto: UpdateTaskDto) {
-    // Remove undefined fields and ensure only valid types are passed
-    const data = Object.fromEntries(
-      Object.entries(dto).filter(([_, v]) => v !== undefined && v !== null && v !== '')
-    );
-    // If status is present and is a string, ignore it
-    if (typeof data.status === 'string') delete data.status;
-    return this.prisma.task.update({ where: { id }, data });
-  }
-
-  delete(id: string) {
+  async remove(id: string) {
     return this.prisma.task.delete({ where: { id } });
   }
 }

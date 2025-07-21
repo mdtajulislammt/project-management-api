@@ -2,8 +2,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RolesGuard } from './auth/guards/roles.guard';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-// import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,10 +11,8 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
 
   // 🔥 Apply JwtAuthGuard first, then RolesGuard
-  app.useGlobalGuards(
-    new JwtAuthGuard(),
-    new RolesGuard(reflector)
-  );
+  // app.useGlobalGuards(new JwtAuthGuard(), new RolesGuard(reflector));
+  // Now only use RolesGuard
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

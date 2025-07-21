@@ -11,6 +11,7 @@ export class PresenceService {
         userId,
         projectId,
         joinedAt: new Date(),
+        status: 'active',
       },
     });
   }

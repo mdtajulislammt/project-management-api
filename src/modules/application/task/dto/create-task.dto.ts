@@ -1,31 +1,35 @@
-import { IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreateTaskDto {
   @IsString()
+  @IsNotEmpty()
   title: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsOptional()
   @IsString()
-  status?: string;
+  @IsNotEmpty()
+  status: string; // "pending" / "completed"
 
-  @IsOptional()
   @IsString()
-  state?: string;
+  @IsNotEmpty()
+  priority: string;
 
-  @IsOptional()
   @IsDateString()
-  dueDate?: string;
+  @IsNotEmpty()
+  deadline: Date;
 
   @IsString()
-  projectId: string;
-
-  @IsString()
+  @IsNotEmpty()
   assignedTo: string;
 
   @IsString()
+  @IsNotEmpty()
+  projectId: string;
+
+  @IsString()
+  @IsNotEmpty()
   createdBy: string;
 }

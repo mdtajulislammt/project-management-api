@@ -12,6 +12,7 @@ export class CommentService {
         content: dto.content,
         taskId: dto.taskId,
         authorId: dto.authorId,
+        status: 'active',
       },
     });
   }

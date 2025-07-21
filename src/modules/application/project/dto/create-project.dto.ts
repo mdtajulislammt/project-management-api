@@ -12,4 +12,12 @@ export class CreateProjectDto {
   @IsString()
   @IsNotEmpty()
   ownerId: string;
+
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsString()
+  endDate?: string;
 }

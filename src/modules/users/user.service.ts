@@ -15,9 +15,13 @@ export class UserService {
         name: createUserDto.name,
         email: createUserDto.email,
         password: hashedPassword,
-        role: createUserDto.role ?? 'user',
+        role: createUserDto.role ?? 'MEMBER',
       },
     });
+  }
+
+  async findAll() {
+    return this.prisma.user.findMany();
   }
 
   async findOne(id: string) {
